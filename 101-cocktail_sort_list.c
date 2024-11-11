@@ -1,66 +1,115 @@
 #include "sort.h"
-#include <stdio.h>
-/**
- *swap_node - Exchange node to next one
- *@node: node variable
- *@list: The node list variable
- *Return: returning pointer to a node
- */
-listint_t *swap_node(listint_t *node, listint_t **list)
-{
-	listint_t *back = node->prev, *current = node;
 
-	back->next = current->next;
-	if (current->next)
-		current->next->prev = back;
-	current->next = back;
-	current->prev = back->prev;
-	back->prev = current;
-	if (current->prev)
-		current->prev->next = current;
-	else
-		*list = current;
-	return (current);
-}
 /**
- *cocktail_sort_list - cocktail sort implementation algorithm
- *working on a double linked lists
- *@list: list variable
+ * max_swap - max swap
+ *
+ * @current: current
+ * @previous: previous
+ * @head: head
+ * @tail: tail
+ *
+ * Return: 1
+ */
+int max_swap(listint_t **current, listint_t **previous,
+		listint_t **head, listint_t **tail)
+{
+	if ((*current)->next == NULL)
+		*tail = *previous;
+	if ((*previous)->prev == NULL)
+		*head = *current;
+	if ((*current)->next != NULL)
+		(*current)->next->prev = *previous;
+	if ((*previous)->prev != NULL)
+		(*previous)->prev->next = *current;
+	(*current)->prev = (*previous)->prev;
+	(*previous)->next = (*current)->next;
+	(*current)->next = *previous;
+	(*previous)->prev = *current;
+	*current = *previous;
+	*previous = (*current)->prev;
+	(void) tail;
+	print_list(*head);
+	return (1);
+}
+
+/**
+ * min_swap - max swap
+ *
+ * @current: current
+ * @previous: previous
+ * @head: head
+ * @tail: tail
+ *
+ * Return: 1
+ */
+int min_swap(listint_t **current, listint_t **previous,
+		listint_t **head, listint_t **tail)
+{
+	if ((*current)->prev == NULL)
+		*head = *previous;
+	if ((*previous)->next == NULL)
+		*tail = *current;
+	if ((*current)->prev != NULL)
+		(*current)->prev->next = *previous;
+	if ((*previous)->next != NULL)
+		(*previous)->next->prev = *current;
+	(*current)->next = (*previous)->next;
+	(*previous)->prev = (*current)->prev;
+	(*current)->prev = *previous;
+	(*previous)->next = *current;
+	*current = *previous;
+	*previous = (*current)->next;
+	(void) tail;
+	print_list(*head);
+	return (1);
+}
+
+/**
+ * cocktail_sort_list - short description
+ *
+ * Description: long description
+ *
+ * @list: argument_1 description
+ *
+ * Return: return description
  */
 void cocktail_sort_list(listint_t **list)
 {
-	listint_t *node;
-	int swap_done = 1;
+	listint_t *current, *head, *previous, *tail;
+	int swap = 1, direction = 1;
 
-	if (list == '\0' || (*list) == '\0' || (*list)->next == '\0')
+	if (list == NULL)
 		return;
-	node = *list;
-	while (swap_done == 1)
+	if ((*list) == NULL || (*list)->next == NULL)
+		return;
+	head = *list;
+	tail = NULL;
+	while (swap)
 	{
-		swap_done = 0;
-		while (node->next)
+		swap = 0;
+		if (direction == 1)
 		{
-			if (node->n > node->next->n)
-			{
-				node = swap_node(node->next, list);
-				swap_done = 1;
-				print_list(*list);
-			}
-			node = node->next;
+			previous = head;
+			current = head->next;
 		}
-		if (swap_done == 0)
-			break;
-		swap_done = 0;
-		while (node->prev)
+		else
 		{
-			if (node->n < node->prev->n)
-			{
-				node = swap_node(node, list);
-				swap_done = 1;
-				print_list(*list);
-			}
+			previous = tail;
+			current = tail->prev;
+		}
+		while (current)
+		{
+			if (direction == 1 && current->n < previous->n)
+				swap = max_swap(&current, &previous, &head, &tail);
+			if (direction == 0 && current->n > previous->n)
+				swap = min_swap(&current, &previous, &head, &tail);
+			previous = current;
+			if (direction == 1)
+				current = current->next;
 			else
-				node = node->prev;
+				current = current->prev;
 		}
+		direction = !direction;
 	}
+	*list = head;
 }
